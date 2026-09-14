@@ -527,6 +527,7 @@ HRESULT CSoundKeeper::Start()
 		m_sessions[0]->SetPeriodicPlaying(m_cfg_play_seconds);
 		m_sessions[0]->SetPeriodicWaiting(m_cfg_wait_seconds);
 		m_sessions[0]->SetFading(m_cfg_fade_seconds);
+		m_sessions[0]->SetSuppressWhenActive(m_cfg_suppress_when_active);
 		m_sessions[0]->Start();
 	}
 	else
@@ -589,6 +590,7 @@ HRESULT CSoundKeeper::Start()
 			m_sessions[i]->SetPeriodicPlaying(m_cfg_play_seconds);
 			m_sessions[i]->SetPeriodicWaiting(m_cfg_wait_seconds);
 			m_sessions[i]->SetFading(m_cfg_fade_seconds);
+			m_sessions[i]->SetSuppressWhenActive(m_cfg_suppress_when_active);
 			m_sessions[i]->Start();
 		}
 
@@ -960,6 +962,7 @@ void CSoundKeeper::ParseModeString(const char* args)
 	if (strstr(buf, "digital")) { this->SetDeviceType(KeepDeviceType::Digital); }
 	if (strstr(buf, "kill"))    { this->SetDeviceType(KeepDeviceType::None); }
 	if (strstr(buf, "remote"))  { this->SetAllowRemote(true); }
+	if (strstr(buf, "suppressactive")) { this->SetSuppressWhenActive(true); }
 
 	if (strstr(buf, "nosleep"))
 	{

@@ -614,6 +614,12 @@ HRESULT CSoundSession::Render()
 
 	DWORD render_flags = NULL;
 
+	if (m_cfg_suppress_when_active)
+	{
+		// Cheap enough to check every buffer refill (roughly once per m_buffer_size_in_ms).
+		m_other_session_active = this->IsOtherSessionActive();
+	}
+
 	uint64_t play_frames = static_cast<uint64_t>(m_play_seconds * m_sample_rate);
 	uint64_t wait_frames = static_cast<uint64_t>(m_wait_seconds * m_sample_rate);
 	uint64_t fade_frames = static_cast<uint64_t>(m_fade_seconds * m_sample_rate);
@@ -634,7 +640,15 @@ HRESULT CSoundSession::Render()
 
 	uint64_t period_frames = play_frames + wait_frames;
 
-	if (period_frames && play_frames <= m_curr_frame && (m_curr_frame + need_frames) <= period_frames)
+	if (m_other_session_active)
+	{
+		// Something else is already producing audio on this device, so the
+		// device can't be sleeping - stay silent instead of adding our own
+		// signal on top of it. The stream stays open, so there's no delay
+		// when we need to resume.
+		render_flags = AUDCLNT_BUFFERFLAGS_SILENT;
+	}
+	else if (period_frames && play_frames <= m_curr_frame && (m_curr_frame + need_frames) <= period_frames)
 	{
 		// Just silence whole time.
 		render_flags = AUDCLNT_BUFFERFLAGS_SILENT;
@@ -936,6 +950,85 @@ CSoundSession::RenderingMode CSoundSession::WaitExclusive()
 	}
 
 	return exit_mode;
+}
+
+//
+// Check whether some other application currently has an active audio
+// session on this endpoint. Our own session (registered via
+// m_audio_session_control) is excluded by comparing process IDs, so this
+// never mistakes our own keep-alive stream for "other" audio.
+bool CSoundSession::IsOtherSessionActive()
+{
+	HRESULT hr;
+
+	IAudioSessionManager2* as_manager = nullptr;
+	hr = m_endpoint->Activate(__uuidof(IAudioSessionManager2), CLSCTX_INPROC_SERVER, NULL, reinterpret_cast<void**>(&as_manager));
+	if (FAILED(hr))
+	{
+		DebugLogWarning("Unable to activate audio session manager for activity check: 0x%08X.", hr);
+		return false;
+	}
+	defer [&] { as_manager->Release(); };
+
+	IAudioSessionEnumerator* session_list = nullptr;
+	hr = as_manager->GetSessionEnumerator(&session_list);
+	if (FAILED(hr))
+	{
+		DebugLogWarning("Unable to get session enumerator for activity check: 0x%08X.", hr);
+		return false;
+	}
+	defer [&] { session_list->Release(); };
+
+	int session_count = 0;
+	hr = session_list->GetCount(&session_count);
+	if (FAILED(hr))
+	{
+		DebugLogWarning("Unable to get session count for activity check: 0x%08X.", hr);
+		return false;
+	}
+
+	DWORD my_pid = GetCurrentProcessId();
+	bool other_active = false;
+
+	for (int index = 0 ; index < session_count ; index++)
+	{
+		IAudioSessionControl* session_control = nullptr;
+		hr = session_list->GetSession(index, &session_control);
+		if (FAILED(hr) || !session_control)
+		{
+			continue;
+		}
+
+		bool is_ours = false;
+		IAudioSessionControl2* session_control2 = nullptr;
+		if (SUCCEEDED(session_control->QueryInterface(IID_PPV_ARGS(&session_control2))) && session_control2)
+		{
+			DWORD pid = 0;
+			if (SUCCEEDED(session_control2->GetProcessId(&pid)) && pid == my_pid)
+			{
+				is_ours = true;
+			}
+			session_control2->Release();
+		}
+
+		if (!is_ours)
+		{
+			AudioSessionState state = AudioSessionStateInactive;
+			if (SUCCEEDED(session_control->GetState(&state)) && state == AudioSessionStateActive)
+			{
+				other_active = true;
+			}
+		}
+
+		session_control->Release();
+
+		if (other_active)
+		{
+			break;
+		}
+	}
+
+	return other_active;
 }
 
 //

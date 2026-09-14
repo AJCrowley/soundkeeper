@@ -61,6 +61,7 @@ protected:
 	double                  m_cfg_play_seconds = 0.0;
 	double                  m_cfg_wait_seconds = 0.0;
 	double                  m_cfg_fade_seconds = 0.0;
+	bool                    m_cfg_suppress_when_active = false;
 
 	HRESULT Start();
 	HRESULT Stop();
@@ -97,11 +98,13 @@ public:
 	void SetPeriodicPlaying(double seconds) { m_cfg_play_seconds = seconds; }
 	void SetPeriodicWaiting(double seconds) { m_cfg_wait_seconds = seconds; }
 	void SetFading(double seconds) { m_cfg_fade_seconds = seconds; }
+	void SetSuppressWhenActive(bool value) { m_cfg_suppress_when_active = value; }
 	double GetFrequency() const { return m_cfg_frequency; }
 	double GetAmplitude() const { return m_cfg_amplitude; }
 	double GetPeriodicPlaying() const { return m_cfg_play_seconds; }
 	double GetPeriodicWaiting() const { return m_cfg_wait_seconds; }
 	double GetFading() const { return m_cfg_fade_seconds; }
+	bool GetSuppressWhenActive() const { return m_cfg_suppress_when_active; }
 
 	// Set stream type and defaults.
 	void SetStreamTypeDefaults(KeepStreamType stream_type);

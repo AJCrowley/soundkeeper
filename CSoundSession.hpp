@@ -31,6 +31,12 @@ protected:
 	LPWSTR                  m_device_id = nullptr;
 	KeepStreamType          m_stream_type = KeepStreamType::Zero;
 
+	// When enabled, the keep-alive stream goes silent while another
+	// application already has an active audio session on this device,
+	// and resumes once that other session goes inactive.
+	bool                    m_cfg_suppress_when_active = false;
+	bool                    m_other_session_active = false;
+
 	HANDLE                  m_render_thread = NULL;
 	ManualResetEvent        m_is_started = false;
 
@@ -111,6 +117,16 @@ public:
 		return m_stream_type;
 	}
 
+	void SetSuppressWhenActive(bool enable)
+	{
+		m_cfg_suppress_when_active = enable;
+	}
+
+	bool GetSuppressWhenActive() const
+	{
+		return m_cfg_suppress_when_active;
+	}
+
 	// Sine generation settings.
 
 	void SetFrequency(double frequency)
@@ -184,6 +200,7 @@ protected:
 	RenderingMode Rendering();
 	HRESULT Render();
 	RenderingMode WaitExclusive();
+	bool IsOtherSessionActive();
 
 public:
 
