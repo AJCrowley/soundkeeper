@@ -3,12 +3,12 @@
 
 #define APP_NAME        "Sound Keeper"
 #define APP_FILE_NAME   "SoundKeeper"
-#define APP_COPYRIGHT   "(C) 2014-2026 Evgeny Vrublevsky <me@veg.by>"
+#define APP_COPYRIGHT   "(C) 2026 Kris McCann (kris@8pi.ca) forked from 2014-2026 Evgeny Vrublevsky <me@veg.by>"
 #define APP_COMPANY     "Vegalogic Software"
 
 #define REV_MAJOR       1
 #define REV_MINOR       3
-#define REV_PATCH       6
+#define REV_PATCH       7
 #define REV_EXTRA       1
 #define REV_BUILD       11
 
