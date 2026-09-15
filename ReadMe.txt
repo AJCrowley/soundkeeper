@@ -1,18 +1,7 @@
-Sound Keeper v1.3.7s [2026/09/14]
-https://github.com/AJCrowley/soundkeeper
-Forked from:
+Sound Keeper v1.3.7 [2026/06/XX]
 https://veg.by/projects/soundkeeper/
 
-If you find my work useful, I always appreciate if you can spare even a small amount via https://buymeacoffee.com/ajcrowley
-
-I like to work on free software, and supporting my projects lets me know that someone appreciates them.
-
 Prevents SPDIF/HDMI digital audio playback devices from sleeping. Uses WASAPI, requires Windows 7+.
-
-This version adds support for supressing output when WASAPI or Shared sound stream open (did not previous support shared).
-
-To enable silencing when not needed, either run as: SoundKeeper.exe suppressactive
-or rename the executable to: SoundKeeperSuppressActive.exe (you can still use all of your other custom params with either method)
 
 You need just one exe file (others can be removed):
 - SoundKeeper32.exe is for x86-32 Windows.
@@ -61,9 +50,6 @@ Examples:
 - "SoundKeeper.exe brown -a 0.1" (settings are command line arguments) generates brown noise with 0.1% amplitude.
 
 What's new
-
-v1.3.7s [2026/09/14]:
-- Added option to suppress output when WASAPI or Shared audio session is already open.
 
 v1.3.7 [2026/06/XX]:
 - An option to run Sound Keeper on explicitly marked (with "!") output devices only.
